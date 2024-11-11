@@ -112,6 +112,7 @@ STDOUT은 결과 값 출력 파일, STDERR는 결과 값 도출 중 출력 되�
 ✔ **`module ~`** 
 
 - 원하는 Linux 환경을 구축할 수 있습니다.
+- 기본적으로 CUDA/11.2.2 실행으로 셋팅되어 있습니다. 지금과 같이 다른 GPU 환경을 원할 경우, 해당 모듈을 unload한 후, 원하는 모듈을 load 합니다.
 - GPU 환경을 사용하고 싶은 경우에만 해당하며, GPU 환경을 사용하지 않을 경우(CPU Partition 사용) 지우셔도 무관합니다.
 
 
@@ -136,77 +137,9 @@ STDOUT은 결과 값 출력 파일, STDERR는 결과 값 도출 중 출력 되�
 
 </br>
 
-실행에 사용된 cnn.py의 자세한 코드는 아래에서 확인할 수 있습니다.
+실행에 사용된 cnn.py의 자세한 코드는 [여기](cnn.qmd)에서 확인할 수 있습니다.
 세부적인 코드는 [링크](https://github.com/uos-ubai/practice01_cnn/blob/main/cnn.ipynb)를 참고하세요.
 
-```{python}
-#| eval: false
-#| python.reticulate: false
-
-import sys
-import tensorflow as tf
-import keras
-import time 
-import os
-
-from tensorflow.python.keras import layers
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten
-from keras.layers import Conv2D, MaxPooling2D
-
-start = time.time()
-
-img_rows = 28
-img_cols = 28
-
-(x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
-
-input_shape = (img_rows, img_cols, 1)
-x_train = x_train.reshape(x_train.shape[0], img_rows, img_cols, 1)
-x_test = x_test.reshape(x_test.shape[0], img_rows, img_cols, 1)
-
-x_train = x_train.astype('float32') / 255. # 데이터 정규화 
-x_test = x_test.astype('float32') / 255.  # 데이터 정규화 
-
-print('x_train shape:', x_train.shape)
-print(x_train.shape[0], 'train samples')
-print(x_test.shape[0], 'test samples')
-
-batch_size = int(sys.argv[2])
-num_classes = 10
-epochs = int(sys.argv[1])
-
-y_train = keras.utils.to_categorical(y_train, num_classes) # 학습을 위한 원핫벡터로 변경 
-y_test = keras.utils.to_categorical(y_test, num_classes) # 원핫벡터로 변경 
-
-model = Sequential()
-model.add(Conv2D(32, kernel_size=(5, 5), strides=(1, 1), padding='same', activation='relu', input_shape=input_shape))
-model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
-model.add(Conv2D(64, (2, 2), activation='relu', padding='same'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Dropout(0.25))
-model.add(Flatten()) # fully connected layer 
-# 완전 연결계층의 문제점은 데이터의 형상이 무시된다. 
-# conv2d로 이미지의 특성들을 뽑아내고 pooling계층을 이용하여 차원을 감소시킨후 dense layer를 사용하여 감소된 차원의 feature map들을 input으로 하여 효율적 학습을 진행 
-model.add(Dense(1000, activation=sys.argv[3]))  # -> Dense Layer와 같은 경우에는 가장 기본적인 층으로서 완전연결계층이다. 
-model.add(Dropout(0.5)) # 과대적합방지를 위해 사용 
-model.add(Dense(num_classes, activation='softmax')) 
-model.summary()
-
-model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-hist = model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, verbose=1, validation_data=(x_test, y_test))
-
-score = model.evaluate(x_test, y_test, verbose=0)
-print('Test loss:', score[0])
-print('Test accuracy:', score[1])
-
-end = time.time() - start
-
-print(end)
-
-```
-
-</br>
 </br>
 
 ### 2. 배치 파일 실행 {.unnumbered}

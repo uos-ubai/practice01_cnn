@@ -12,6 +12,7 @@ book:
       University of Seoul
   chapters:
     - index.qmd
+    - cnn.qmd
 
 format:
   html:
